@@ -29,22 +29,24 @@ public class UsersFacade {
         return usersDTO;
     }
 
-    public UsersDTO atualizar(UsersDTO usersDTO, Long usersId) {
+    public UsersDTO atualizar (UsersDTO usersDTO,Long usersId) {
         Users usersData = repository.getOne(usersId);
         usersData.setName(usersDTO.getName());
         usersData.setEmail(usersDTO.getEmail());
         usersData.setPassword(usersDTO.getPassword());
         usersData.setUpdatedAt(LocalDateTime.now());
+        repository.save(usersData);
         return usersDTO;
     }
 
     private UsersDTO converter (Users users){
         UsersDTO result = new UsersDTO();
-        users.setName(users.getName());
-        users.setEmail(users.getEmail());
-        users.setPassword(users.getPassword());
-        users.setCreatedAt(users.getCreatedAt());
-        users.setUpdatedAt(users.getUpdatedAt());
+        result.setId(users.getId());
+        result.setName(users.getName());
+        result.setEmail(users.getEmail());
+        result.setPassword(users.getPassword());
+        result.setCreatedAt(users.getCreatedAt());
+        result.setUpdatedAt(users.getUpdatedAt());
         return result;
     }
 
@@ -55,8 +57,8 @@ public class UsersFacade {
                 .map(this::converter).collect(Collectors.toList());
     }
 
-    public String delete (Long userId){
-        repository.deleteById(userId);
+    public String delete (Long usersId){
+        repository.deleteById(usersId);
         return "DELETED";
     }
 
