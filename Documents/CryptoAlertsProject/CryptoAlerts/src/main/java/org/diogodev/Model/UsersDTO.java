@@ -1,6 +1,4 @@
 package org.diogodev.Model;
-
-import javax.persistence.Column;
 import java.time.LocalDateTime;
 
 public class UsersDTO {
