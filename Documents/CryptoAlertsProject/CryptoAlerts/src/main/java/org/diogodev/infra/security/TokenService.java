@@ -29,7 +29,7 @@ public class TokenService {
             throw new RuntimeException("Error while authenticating");
         }
     }
-    public String validateToker(String token){
+    public String validateToken(String token){
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.require(algorithm)

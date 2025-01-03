@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,6 +61,19 @@ public class UsersFacade {
     public String delete (Long usersId){
         repository.deleteById(usersId);
         return "DELETED";
+    }
+
+    public Optional<Users> findByEmail(String email) {
+        List<Users> users = repository.findAll();
+        return users.stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findFirst();
+    }
+
+    public UsersDTO findByEmailAsDTO(String email) {
+        return findByEmail(email)
+                .map(this::converter)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
     }
 
 

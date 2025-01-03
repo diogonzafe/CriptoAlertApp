@@ -14,7 +14,13 @@ public class UsersController {
     @Autowired
     private UsersFacade usersFacade;
 
-    @PostMapping
+    /**
+     *To-DO
+     * Auth-login controller and config all
+     */
+
+
+    @PostMapping("/register")
     @ResponseBody
     public UsersDTO criar(@RequestBody UsersDTO usersDTO){
         return usersFacade.criar(usersDTO);
