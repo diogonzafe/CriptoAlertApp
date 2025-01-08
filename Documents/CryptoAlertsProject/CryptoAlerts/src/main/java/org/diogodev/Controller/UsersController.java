@@ -1,9 +1,11 @@
 package org.diogodev.Controller;
 
+import org.diogodev.Model.ResponseDTO;
 import org.diogodev.Model.UsersDTO;
 import org.diogodev.Services.UsersFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,9 +23,13 @@ public class UsersController {
 
 
     @PostMapping("/register")
-    @ResponseBody
-    public UsersDTO criar(@RequestBody UsersDTO usersDTO){
-        return usersFacade.criar(usersDTO);
+    public ResponseEntity<ResponseDTO> register(@RequestBody UsersDTO body) {
+        try {
+            ResponseDTO response = usersFacade.criar(body);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body(new ResponseDTO("Error", ex.getMessage()));
+        }
     }
 
     @PutMapping("/{usersId}")

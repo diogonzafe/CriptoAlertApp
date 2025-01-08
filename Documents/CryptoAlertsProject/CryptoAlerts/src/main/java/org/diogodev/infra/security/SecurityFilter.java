@@ -1,8 +1,6 @@
 package org.diogodev.infra.security;
 
-import lombok.var;
 import org.diogodev.Model.Users;
-import org.diogodev.Repository.UsersRepository;
 import org.diogodev.Services.UsersFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,10 +9,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;  // Alterado de javax.servlet para jakarta.servlet
+import jakarta.servlet.ServletException;  // Alterado de javax.servlet para jakarta.servlet
+import jakarta.servlet.http.HttpServletRequest;  // Alterado de javax.servlet para jakarta.servlet
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 

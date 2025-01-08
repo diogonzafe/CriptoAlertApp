@@ -1,11 +1,12 @@
 package org.diogodev.Services;
 
-import org.apache.tomcat.jni.Local;
-import org.apache.tomcat.jni.User;
+import org.diogodev.Model.ResponseDTO;
 import org.diogodev.Model.Users;
 import org.diogodev.Model.UsersDTO;
 import org.diogodev.Repository.UsersRepository;
+import org.diogodev.infra.security.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,15 +20,43 @@ public class UsersFacade {
     @Autowired
     private UsersRepository repository;
 
-    public UsersDTO criar(UsersDTO usersDTO) {
-        Users users = new Users();
-        users.setName(usersDTO.getName());
-        users.setEmail(usersDTO.getEmail());
-        users.setPassword(usersDTO.getPassword());
-        users.setCreatedAt(LocalDateTime.now());
-        repository.save(users);
-        users.setId(usersDTO.getId());
-        return usersDTO;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private TokenService tokenService;
+
+
+    public ResponseDTO login(String email, String password) {
+        Users user = this.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not Found"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        String token = tokenService.generateToken(user);
+        return new ResponseDTO(user.getName(), token);
+    }
+    public ResponseDTO criar(UsersDTO usersDTO) {
+        // Verificar se o email já está registrado
+        Optional<Users> existingUser = findByEmail(usersDTO.getEmail());
+        if (existingUser.isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        // Criar o novo usuário
+        Users newUser = new Users();
+        newUser.setName(usersDTO.getName());
+        newUser.setEmail(usersDTO.getEmail());
+        newUser.setPassword(passwordEncoder.encode(usersDTO.getPassword())); // Codificar a senha
+        newUser.setCreatedAt(LocalDateTime.now());
+        repository.save(newUser);
+
+        // Gerar o token para o novo usuário
+        String token = tokenService.generateToken(newUser);
+
+        return new ResponseDTO(newUser.getName(), token);
     }
 
     public UsersDTO atualizar (UsersDTO usersDTO,Long usersId) {
