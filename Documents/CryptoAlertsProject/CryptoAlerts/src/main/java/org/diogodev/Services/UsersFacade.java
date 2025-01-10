@@ -1,5 +1,6 @@
 package org.diogodev.Services;
 
+import org.diogodev.Model.GoogleAuthRequestDTO;
 import org.diogodev.Model.ResponseDTO;
 import org.diogodev.Model.Users;
 import org.diogodev.Model.UsersDTO;
@@ -26,7 +27,6 @@ public class UsersFacade {
     @Autowired
     private TokenService tokenService;
 
-
     public ResponseDTO login(String email, String password) {
         Users user = this.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not Found"));
@@ -38,6 +38,54 @@ public class UsersFacade {
         String token = tokenService.generateToken(user);
         return new ResponseDTO(user.getName(), token);
     }
+
+    public GoogleAuthRequestDTO loginGoogle(String email, String name) {
+        Optional<Users> existingUser = findByEmail(email);
+
+        Users user;
+        if (existingUser.isEmpty()) {
+            // Criar novo usuário para autenticação via Google
+            user = new Users();
+            user.setName(name);
+            user.setEmail(email);
+            user.setPassword(null); // Não armazenamos senha para login via Google
+            user.setCreatedAt(LocalDateTime.now());
+            repository.save(user);
+        } else {
+            // Usuário já existente
+            user = existingUser.get();
+        }
+
+        // Gerar token JWT
+        String token = tokenService.generateToken(user);
+
+        return new GoogleAuthRequestDTO(user.getName(), token);
+    }
+
+    public GoogleAuthRequestDTO registerGoogle(String email, String name) {
+        // Verificar se o usuário já existe
+        Optional<Users> existingUser = findByEmail(email);
+        if (existingUser.isPresent()) {
+            throw new RuntimeException("Email already registered via Google");
+        }
+
+        // Criar novo usuário
+        Users newUser = new Users();
+        newUser.setName(name);
+        newUser.setEmail(email);
+        newUser.setPassword(null); // Não armazenamos senha para login via Google
+        newUser.setCreatedAt(LocalDateTime.now());
+
+        // Salvar no repositório
+        repository.save(newUser);
+
+        // Gerar token JWT para autenticação
+        String token = tokenService.generateToken(newUser);
+
+        return new GoogleAuthRequestDTO(newUser.getName(), token);
+    }
+
+
     public ResponseDTO criar(UsersDTO usersDTO) {
         // Verificar se o email já está registrado
         Optional<Users> existingUser = findByEmail(usersDTO.getEmail());
@@ -59,7 +107,7 @@ public class UsersFacade {
         return new ResponseDTO(newUser.getName(), token);
     }
 
-    public UsersDTO atualizar (UsersDTO usersDTO,Long usersId) {
+    public UsersDTO atualizar(UsersDTO usersDTO, Long usersId) {
         Users usersData = repository.getOne(usersId);
         usersData.setName(usersDTO.getName());
         usersData.setEmail(usersDTO.getEmail());
@@ -69,7 +117,7 @@ public class UsersFacade {
         return usersDTO;
     }
 
-    private UsersDTO converter (Users users){
+    private UsersDTO converter(Users users) {
         UsersDTO result = new UsersDTO();
         result.setId(users.getId());
         result.setName(users.getName());
@@ -80,14 +128,14 @@ public class UsersFacade {
         return result;
     }
 
-    public List<UsersDTO> getAll(){
+    public List<UsersDTO> getAll() {
         return repository
                 .findAll()
                 .stream()
                 .map(this::converter).collect(Collectors.toList());
     }
 
-    public String delete (Long usersId){
+    public String delete(Long usersId) {
         repository.deleteById(usersId);
         return "DELETED";
     }
@@ -104,6 +152,4 @@ public class UsersFacade {
                 .map(this::converter)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
     }
-
-
 }
